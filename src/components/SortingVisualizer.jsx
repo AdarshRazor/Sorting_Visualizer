@@ -1,97 +1,98 @@
-import {Component} from 'react';
-import './SortingVisualizer.css'
-import {mergeSortalgo, bubbleSortAlgo, heapSortAlgo, quickSortAlgo} from './sortingAlgo'
+import { Component } from 'react';
+import './SortingVisualizer.css';
+import { mergeSortalgo, bubbleSortAlgo, heapSortAlgo, quickSortAlgo } from './sortingAlgo';
 
 export default class SortingVisualizer extends Component {
-    // constructor defined in class component
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
             array: [],
             arrayBarColor: 'red',
+            sortTimes: {
+                mergeSort: null,
+                bubbleSort: null,
+                quickSort: null,
+                heapSort: null,
+            },
         };
     }
 
-    // invoked immediately after a component is mounted abd that will reset the array
     componentDidMount() {
         this.resetArray();
     }
 
-    // method (function defined that operates on instances of that class). This is to fill the reset array with the data
     resetArray() {
         const array = [];
-        // 1080p 150 or 190
         for (let i = 0; i < 180; i++) {
-            array.push(randomIntFromInterval(5,700)); // putting 1000 on screen is not possible
+            array.push(randomIntFromInterval(5, 700));
         }
-        this.setState({ arrayBarColor: 'red' });
-        this.setState({array});
+        this.setState({
+            array,
+            arrayBarColor: 'red',
+            sortTimes: { mergeSort: null, bubbleSort: null, quickSort: null, heapSort: null }
+        });
+    }
+
+    measureSortTime(sortAlgo, algoName) {
+        const arrayCopy = [...this.state.array];
+        const start = performance.now();
+        const sortedArray = sortAlgo(arrayCopy);
+        const end = performance.now();
+        const time = (end - start).toFixed(2);
+        this.setState({
+            array: sortedArray,
+            arrayBarColor: 'black',
+            sortTimes: { ...this.state.sortTimes, [algoName]: time },
+        });
     }
 
     mergeSort() {
-        //const Sorted_Array = this.state.array.slice().sort((a, b) => a - b); // sort(a, b) => a - b is to make sure 100 wont come before 5 becoz it has 1 in front. Some JS things >_<
-
-        const sortedArray = mergeSortalgo(this.state.array);
-
-        this.setState({ arrayBarColor: 'black' });
-        this.setState({array: sortedArray});
+        this.measureSortTime(mergeSortalgo, 'mergeSort');
     }
 
     bubbleSort() {
-
-        const sortedArray = bubbleSortAlgo(this.state.array);
-        
-        this.setState({ arrayBarColor: 'green' });
-        this.setState({array: sortedArray});
+        this.measureSortTime(bubbleSortAlgo, 'bubbleSort');
     }
 
     quickSort() {
-
-        const sortedArray = quickSortAlgo(this.state.array);
-
-        this.setState({ arrayBarColor: 'yellow' });
-        this.setState({array: sortedArray});
+        this.measureSortTime(quickSortAlgo, 'quickSort');
     }
 
     heapSort() {
-
-        const sortedArray = heapSortAlgo(this.state.array);
-
-        this.setState({ arrayBarColor: 'blue' });
-        this.setState({array: sortedArray});
+        this.measureSortTime(heapSortAlgo, 'heapSort');
     }
 
     render() {
-        // Destructuring the component
-        const {array, arrayBarColor} = this.state;
+        const { array, arrayBarColor, sortTimes } = this.state;
 
-        return(
+        return (
             <div className='array-container'>
-            {array.map(
-                (value, index) => (
-                    <div className='array-bar' key={index} style={{height: `${value}px`, backgroundColor: arrayBarColor}}>
-                      
-                    </div>
-                    // style={{height: `${value}px`}}
-                    // insead of giving the value, we can include in the style to display the height on the bar
-                )
-            )}
-            <br/>
-            <button className="Gen" onClick={()=> this.resetArray()}>Generate New Array</button>
+                {array.map((value, index) => (
+                    <div
+                        className='array-bar'
+                        key={index}
+                        style={{ height: `${value}px`, backgroundColor: arrayBarColor }}
+                    ></div>
+                ))}
+                <br />
+                <button className="Gen" onClick={() => this.resetArray()}>Generate New Array</button>
+                <button onClick={() => this.mergeSort()}>Merge Sort</button>
+                <button onClick={() => this.quickSort()}>Quick Sort</button>
+                <button onClick={() => this.heapSort()}>Heap Sort</button>
+                <button onClick={() => this.bubbleSort()}>Bubble Sort</button>
 
-            <button onClick={()=> this.mergeSort()}>Merge Sort</button>
-            <button onClick={()=> this.quickSort()}>Quick Sort</button>
-            <button onClick={()=> this.heapSort()}>Heap Sort</button>
-            <button onClick={()=> this.bubbleSort()}>Bubble Sort</button>
+                <div className="sort-times">
+                    <p>Merge Sort Time: {sortTimes.mergeSort ? `${sortTimes.mergeSort} ms` : 'N/A'}</p>
+                    <p>Quick Sort Time: {sortTimes.quickSort ? `${sortTimes.quickSort} ms` : 'N/A'}</p>
+                    <p>Heap Sort Time: {sortTimes.heapSort ? `${sortTimes.heapSort} ms` : 'N/A'}</p>
+                    <p>Bubble Sort Time: {sortTimes.bubbleSort ? `${sortTimes.bubbleSort} ms` : 'N/A'}</p>
+                </div>
             </div>
-        )
+        );
     }
 }
 
-// how to randomise number in JS
 function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
-
-// Math.random() method to generate a random decimal number between 0 (inclusive) and 1 (exclusive).
